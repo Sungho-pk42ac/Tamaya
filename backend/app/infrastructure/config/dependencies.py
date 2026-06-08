@@ -2,6 +2,7 @@ from fastapi import Depends, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.service.ai_chat_service import AiChatService
+from app.application.service.clova_connection_tester import ClovaConnectionTester
 from app.application.service.embedding_service import EmbeddingService
 from app.application.service.health_ai_service import HealthAiService
 from app.application.service.signal_extraction_service import SignalExtractionService
@@ -12,6 +13,7 @@ from app.application.usecase.get_monthly_insight import GetMonthlyInsightUseCase
 from app.application.usecase.get_weekly_insight import GetWeeklyInsightUseCase
 from app.application.usecase.health_chat_agent import HealthChatAgent
 from app.domain.repository.chat_session_repository import ChatSessionRepository
+from app.domain.repository.clova_setting_repository import ClovaSettingRepository
 from app.domain.repository.diary_repository import DiaryRepository
 from app.domain.repository.event_chunk_repository import EventChunkRepository
 from app.domain.repository.health_chunk_repository import HealthChunkRepository
@@ -22,9 +24,13 @@ from app.domain.service.clova_credential import resolve_clova_credential
 from app.infrastructure.config.database import get_db
 from app.infrastructure.config.settings import settings
 from app.infrastructure.external.clova_client import ClovaClient, HealthClovaClient
+from app.infrastructure.external.clova_connection_tester_impl import ClovaConnectionTesterImpl
 from app.infrastructure.external.embedding_service_impl import SentenceTransformerEmbeddingService
 from app.infrastructure.external.signal_extraction_clova import SignalExtractionClovaClient
 from app.infrastructure.persistence.chat_session_repository_impl import ChatSessionRepositoryImpl
+from app.infrastructure.persistence.clova_setting_repository_impl import (
+    ClovaSettingRepositoryImpl,
+)
 from app.infrastructure.persistence.diary_repository_impl import DiaryRepositoryImpl
 from app.infrastructure.persistence.event_chunk_repository_impl import EventChunkRepositoryImpl
 from app.infrastructure.persistence.health_chunk_repository_impl import HealthChunkRepositoryImpl
@@ -114,6 +120,14 @@ def get_monthly_insight_usecase(
     repo: QualitativeSignalRepository = Depends(get_qualitative_signal_repo),
 ) -> GetMonthlyInsightUseCase:
     return GetMonthlyInsightUseCase(repo)
+
+
+def get_clova_connection_tester() -> ClovaConnectionTester:
+    return ClovaConnectionTesterImpl()
+
+
+def get_clova_setting_repo(db: AsyncSession = Depends(get_db)) -> ClovaSettingRepository:
+    return ClovaSettingRepositoryImpl(db)
 
 
 def get_health_ai_service() -> HealthAiService:

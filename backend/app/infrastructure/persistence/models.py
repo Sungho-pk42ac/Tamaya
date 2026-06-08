@@ -202,6 +202,22 @@ class QualitativeSignalModel(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
 
+class ClovaSettingModel(Base):
+    """BYOK CLOVA 설정 — device_id별 마스킹 키 프리뷰. 원문 키는 저장하지 않는다."""
+
+    __tablename__ = "clova_settings"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # unique=True가 암묵적 인덱스를 만들므로 index=True는 중복(autogenerate drift 방지).
+    device_id: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
+    masked_key: Mapped[str] = mapped_column(String(64), nullable=False)
+    has_key: Mapped[bool] = mapped_column(Boolean, default=False)
+    # onupdate로 키 재저장 시 갱신 시각을 반영한다(upsert 업데이트 경로 정합).
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.now, onupdate=datetime.now
+    )
+
+
 # ─── 키우기 게임 도메인 (DEC-019, DEC-022.B) ───────────────────────────────────
 
 
