@@ -3,10 +3,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.service.ai_chat_service import AiChatService
 from app.application.service.clova_connection_tester import ClovaConnectionTester
+from app.application.service.coaching_ai_service import CoachingAiService
 from app.application.service.embedding_service import EmbeddingService
 from app.application.service.health_ai_service import HealthAiService
 from app.application.service.signal_extraction_service import SignalExtractionService
 from app.application.usecase.chat_agent import ChatAgent
+from app.application.usecase.coaching_agent import CoachingAgent
 from app.application.usecase.extract_chunks import ExtractChunksUseCase
 from app.application.usecase.extract_signals import ExtractSignalsUseCase
 from app.application.usecase.get_monthly_insight import GetMonthlyInsightUseCase
@@ -25,6 +27,7 @@ from app.infrastructure.config.database import get_db
 from app.infrastructure.config.settings import settings
 from app.infrastructure.external.clova_client import ClovaClient, HealthClovaClient
 from app.infrastructure.external.clova_connection_tester_impl import ClovaConnectionTesterImpl
+from app.infrastructure.external.coaching_clova import CoachingClovaClient
 from app.infrastructure.external.embedding_service_impl import SentenceTransformerEmbeddingService
 from app.infrastructure.external.signal_extraction_clova import SignalExtractionClovaClient
 from app.infrastructure.persistence.chat_session_repository_impl import ChatSessionRepositoryImpl
@@ -120,6 +123,24 @@ def get_monthly_insight_usecase(
     repo: QualitativeSignalRepository = Depends(get_qualitative_signal_repo),
 ) -> GetMonthlyInsightUseCase:
     return GetMonthlyInsightUseCase(repo)
+
+
+def get_coaching_ai_service(
+    x_clova_api_key: str | None = Header(default=None),
+) -> CoachingAiService:
+    # BYOK: 코칭 경로도 chat과 동일하게 요청별 키를 우선순위대로 해석한다.
+    cred = resolve_clova_credential(
+        user_key=x_clova_api_key,
+        env_key=settings.clova_api_key,
+        mock_mode=settings.clova_mock_mode,
+    )
+    return CoachingClovaClient(api_key=cred.api_key, mock=cred.use_mock)
+
+
+def get_coaching_agent(
+    ai: CoachingAiService = Depends(get_coaching_ai_service),
+) -> CoachingAgent:
+    return CoachingAgent(ai)
 
 
 def get_clova_connection_tester() -> ClovaConnectionTester:
