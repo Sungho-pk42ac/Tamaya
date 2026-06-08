@@ -86,3 +86,20 @@ def build_disclaimer(verdict: GuardrailVerdict) -> str:
     if verdict == GuardrailVerdict.ADVICE_BOUNDARY:
         return _ADVICE_DISCLAIMER
     return ""
+
+
+# 생성된 응답에 섞이면 안 되는 처방성 지시 토큰 (post-generation tripwire용)
+_PRESCRIPTIVE_TOKENS: tuple[str, ...] = (
+    "mg",
+    "밀리그램",
+    "정씩",
+    "알씩",
+    "정을 드",
+    "알 드세",
+    "복용량",
+)
+
+
+def contains_prescriptive_content(text: str) -> bool:
+    """생성 응답에 처방성 지시(용량·복용 등)가 섞였는지 검사한다(결정론)."""
+    return any(token in text for token in _PRESCRIPTIVE_TOKENS)
