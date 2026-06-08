@@ -4,8 +4,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.application.service.ai_chat_service import AiChatService
 from app.application.service.embedding_service import EmbeddingService
 from app.application.service.health_ai_service import HealthAiService
+from app.application.service.signal_extraction_service import SignalExtractionService
 from app.application.usecase.chat_agent import ChatAgent
 from app.application.usecase.extract_chunks import ExtractChunksUseCase
+from app.application.usecase.extract_signals import ExtractSignalsUseCase
 from app.application.usecase.health_chat_agent import HealthChatAgent
 from app.domain.repository.chat_session_repository import ChatSessionRepository
 from app.domain.repository.diary_repository import DiaryRepository
@@ -13,9 +15,11 @@ from app.domain.repository.event_chunk_repository import EventChunkRepository
 from app.domain.repository.health_chunk_repository import HealthChunkRepository
 from app.domain.repository.health_record_repository import HealthRecordRepository
 from app.domain.repository.health_session_repository import HealthSessionRepository
+from app.domain.repository.qualitative_signal_repository import QualitativeSignalRepository
 from app.infrastructure.config.database import get_db
 from app.infrastructure.external.clova_client import ClovaClient, HealthClovaClient
 from app.infrastructure.external.embedding_service_impl import SentenceTransformerEmbeddingService
+from app.infrastructure.external.signal_extraction_clova import SignalExtractionClovaClient
 from app.infrastructure.persistence.chat_session_repository_impl import ChatSessionRepositoryImpl
 from app.infrastructure.persistence.diary_repository_impl import DiaryRepositoryImpl
 from app.infrastructure.persistence.event_chunk_repository_impl import EventChunkRepositoryImpl
@@ -23,6 +27,9 @@ from app.infrastructure.persistence.health_chunk_repository_impl import HealthCh
 from app.infrastructure.persistence.health_record_repository_impl import HealthRecordRepositoryImpl
 from app.infrastructure.persistence.health_session_repository_impl import (
     HealthSessionRepositoryImpl,
+)
+from app.infrastructure.persistence.qualitative_signal_repository_impl import (
+    QualitativeSignalRepositoryImpl,
 )
 
 _embedding_service: EmbeddingService | None = None
@@ -65,6 +72,23 @@ def get_chat_agent(
     event_chunk_repo: EventChunkRepository = Depends(get_event_chunk_repo),
 ) -> ChatAgent:
     return ChatAgent(ai, embedding, event_chunk_repo)
+
+
+def get_signal_extraction_service() -> SignalExtractionService:
+    return SignalExtractionClovaClient()
+
+
+def get_qualitative_signal_repo(
+    db: AsyncSession = Depends(get_db),
+) -> QualitativeSignalRepository:
+    return QualitativeSignalRepositoryImpl(db)
+
+
+def get_extract_signals_usecase(
+    service: SignalExtractionService = Depends(get_signal_extraction_service),
+    repo: QualitativeSignalRepository = Depends(get_qualitative_signal_repo),
+) -> ExtractSignalsUseCase:
+    return ExtractSignalsUseCase(service, repo)
 
 
 def get_health_ai_service() -> HealthAiService:
