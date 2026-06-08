@@ -51,6 +51,14 @@ jobs:
         working-directory: ./backend
         run: uv sync
 
+      - name: Lint (ruff)
+        working-directory: ./backend
+        run: uv run ruff check .
+
       - name: Compile smoke check
         working-directory: ./backend
         run: uv run python -m compileall app
+
+      - name: Tests (pytest — AC-3 가드레일 회귀 하드게이트)
+        working-directory: ./backend
+        run: uv run pytest -q
