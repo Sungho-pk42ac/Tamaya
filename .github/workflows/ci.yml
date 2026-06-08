@@ -62,3 +62,64 @@ jobs:
       - name: Tests (pytest — AC-3 가드레일 회귀 하드게이트)
         working-directory: ./backend
         run: uv run pytest -q
+
+  e2e:
+    runs-on: ubuntu-latest
+    env:
+      # NEXT_PUBLIC_* 는 next build 시점에 번들에 인라인된다. 127.0.0.1로 IPv6 회피.
+      NEXT_PUBLIC_API_BASE: http://127.0.0.1:8000
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install backend deps
+        working-directory: ./backend
+        run: uv sync
+
+      - name: Start backend (mock mode, DB-free 코칭 경로)
+        working-directory: ./backend
+        run: |
+          nohup uv run python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 > /tmp/backend.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:8000/health > /dev/null; then
+              echo "backend up"; exit 0
+            fi
+            sleep 1
+          done
+          echo "backend failed to start"; cat /tmp/backend.log; exit 1
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: frontend-next/pnpm-lock.yaml
+
+      - name: Install frontend-next deps
+        working-directory: ./frontend-next
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browser
+        working-directory: ./frontend-next
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build frontend-next
+        working-directory: ./frontend-next
+        run: pnpm build
+
+      - name: Run e2e (Playwright)
+        working-directory: ./frontend-next
+        run: pnpm test:e2e
