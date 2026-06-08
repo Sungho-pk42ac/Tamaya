@@ -1,4 +1,4 @@
-from fastapi import Depends
+from fastapi import Depends, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.service.ai_chat_service import AiChatService
@@ -18,7 +18,9 @@ from app.domain.repository.health_chunk_repository import HealthChunkRepository
 from app.domain.repository.health_record_repository import HealthRecordRepository
 from app.domain.repository.health_session_repository import HealthSessionRepository
 from app.domain.repository.qualitative_signal_repository import QualitativeSignalRepository
+from app.domain.service.clova_credential import resolve_clova_credential
 from app.infrastructure.config.database import get_db
+from app.infrastructure.config.settings import settings
 from app.infrastructure.external.clova_client import ClovaClient, HealthClovaClient
 from app.infrastructure.external.embedding_service_impl import SentenceTransformerEmbeddingService
 from app.infrastructure.external.signal_extraction_clova import SignalExtractionClovaClient
@@ -49,8 +51,17 @@ def get_event_chunk_repo(db: AsyncSession = Depends(get_db)) -> EventChunkReposi
     return EventChunkRepositoryImpl(db)
 
 
-def get_ai_chat_service() -> AiChatService:
-    return ClovaClient()
+def get_ai_chat_service(
+    x_clova_api_key: str | None = Header(default=None),
+) -> AiChatService:
+    # BYOK: 요청 헤더의 사용자 키를 우선순위(user>env>mock)로 해석한다.
+    # 키는 마스킹 외 형태로 로깅하지 않으며 settings(env)는 변경하지 않는다.
+    cred = resolve_clova_credential(
+        user_key=x_clova_api_key,
+        env_key=settings.clova_api_key,
+        mock_mode=settings.clova_mock_mode,
+    )
+    return ClovaClient(api_key=cred.api_key, mock=cred.use_mock)
 
 
 def get_embedding_service() -> EmbeddingService:
