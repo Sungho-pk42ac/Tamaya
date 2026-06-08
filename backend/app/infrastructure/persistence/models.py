@@ -14,7 +14,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, UUID
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -177,6 +177,29 @@ class HealthMessageModel(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
     session: Mapped["HealthSessionModel"] = relationship(back_populates="messages")
+
+
+# ─── 정성신호 도메인 (G002 Backend-Insight) ────────────────────────────────────
+
+
+class QualitativeSignalModel(Base):
+    """코칭 대화에서 추출한 정성신호 — device_id 키잉(User 테이블 없음).
+
+    session_id는 coaching_sessions 테이블 부재로 FK 없이 단순 UUID로 둔다.
+    behavior_mentions는 [{"behavior": str, "polarity": int}] 형태의 JSONB.
+    (device_id, recorded_date) 복합 인덱스로 주/월 기간 집계를 가속한다.
+    """
+
+    __tablename__ = "qualitative_signals"
+    __table_args__ = (Index("ix_qualitative_signals_device_date", "device_id", "recorded_date"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    device_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    session_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
+    emotion: Mapped[str] = mapped_column(String(20), nullable=False)
+    behavior_mentions: Mapped[list[dict]] = mapped_column(JSONB, nullable=False, default=list)
+    recorded_date: Mapped[date] = mapped_column(Date, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
 
 # ─── 키우기 게임 도메인 (DEC-019, DEC-022.B) ───────────────────────────────────
