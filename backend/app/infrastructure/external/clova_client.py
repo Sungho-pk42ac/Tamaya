@@ -145,12 +145,13 @@ CHUNK_EXTRACT_USER_REQUEST = """위 대화에서 기억할 만한 사건들을 J
 # Client 구현
 # -------------------------------
 class ClovaClient(AiChatService):
-    def __init__(self) -> None:
+    def __init__(self, api_key: str | None = None, mock: bool | None = None) -> None:
+        # BYOK: 요청별 키/모드 override. 미지정 시 settings 기본값(비파괴).
         self._client = AsyncOpenAI(
-            api_key=settings.clova_api_key,
+            api_key=api_key if api_key is not None else settings.clova_api_key,
             base_url=settings.clova_base_url,
         )
-        self._mock = settings.clova_mock_mode
+        self._mock = mock if mock is not None else settings.clova_mock_mode
 
     async def chat(
         self,
