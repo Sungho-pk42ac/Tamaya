@@ -110,6 +110,7 @@ export default function CoachPage() {
             {messages.map((m, i) => (
               <div
                 key={i}
+                data-role={m.role}
                 className={`max-w-[80%] px-3.5 py-2.5 text-[13.5px] leading-relaxed rounded-2xl mt-2.5 ${
                   m.role === "assistant"
                     ? "self-start rounded-bl-[5px] bg-espresso-card text-night-cream border border-amber/35"
