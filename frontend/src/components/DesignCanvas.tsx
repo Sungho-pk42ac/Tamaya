@@ -74,8 +74,7 @@ export const DesignCanvas = ({ children }: { children: ReactNode }) => {
       subtitle: sec.props.subtitle,
       artboards: flatten(sec.props.children)
         .filter(
-          (a): a is React.ReactElement<ArtboardProps> =>
-            isValidElement(a) && a.type === DCArtboard,
+          (a): a is React.ReactElement<ArtboardProps> => isValidElement(a) && a.type === DCArtboard,
         )
         .map((a) => a.props),
     }));
@@ -134,7 +133,9 @@ export const DesignCanvas = ({ children }: { children: ReactNode }) => {
           return child;
         }
         const sectionIdx = sections.findIndex((s) => s.id === (child.props as SectionProps).id);
-        return <SectionRenderer ctx={ctx} sectionIdx={sectionIdx} {...(child.props as SectionProps)} />;
+        return (
+          <SectionRenderer ctx={ctx} sectionIdx={sectionIdx} {...(child.props as SectionProps)} />
+        );
       })}
       {focus && (
         <FocusOverlay
@@ -159,9 +160,7 @@ const SectionRenderer = ({
   const artboards = flatten(children).filter(
     (a): a is React.ReactElement<ArtboardProps> => isValidElement(a) && a.type === DCArtboard,
   );
-  const rest = flatten(children).filter(
-    (a) => !(isValidElement(a) && a.type === DCArtboard),
-  );
+  const rest = flatten(children).filter((a) => !(isValidElement(a) && a.type === DCArtboard));
 
   return (
     <section data-dc-section={id} style={{ marginBottom: 80, position: 'relative' }}>
@@ -287,16 +286,17 @@ const FocusOverlay = ({
   onClose: () => void;
   onGo: (f: FocusState) => void;
 }) => {
-  const sec = ctx.sections[focus.sectionIdx];
-  const ab = sec?.artboards[focus.artIdx];
-  if (!ab) return null;
-
+  // Hooks는 early return보다 먼저, 항상 같은 순서로 호출돼야 한다 (react-hooks/rules-of-hooks)
   const [vp, setVp] = useState({ w: window.innerWidth, h: window.innerHeight });
   useEffect(() => {
     const r = () => setVp({ w: window.innerWidth, h: window.innerHeight });
     window.addEventListener('resize', r);
     return () => window.removeEventListener('resize', r);
   }, []);
+
+  const sec = ctx.sections[focus.sectionIdx];
+  const ab = sec?.artboards[focus.artIdx];
+  if (!ab) return null;
 
   const w = ab.width ?? 260;
   const h = ab.height ?? 480;

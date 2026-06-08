@@ -13,7 +13,11 @@
  * ========================================================================== */
 
 /* ── 1. 박스 모델 정규화 ──────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
 /* ── 2. 반응형 컨테이너 ──────────────────────────────────────────────────
    .container       : 중앙 정렬 + 최대폭 + 좌우 fluid 패딩
@@ -25,13 +29,21 @@
   margin-inline: auto;
   padding-inline: clamp(16px, 4vw, 40px);
 }
-.container--app  { max-width: var(--app-max); }
-.container--read { max-width: var(--content-max); }
+.container--app {
+  max-width: var(--app-max);
+}
+.container--read {
+  max-width: var(--content-max);
+}
 
 /* ── 3. 유동 타이포 헬퍼 (clamp 기반) ────────────────────────────────────
    고정 px 대신 뷰포트에 따라 부드럽게 — 풀 반응형의 핵심. */
-.fluid-display { font-size: clamp(26px, 6vw, var(--text-display)); }
-.fluid-title   { font-size: clamp(20px, 4.5vw, var(--text-title)); }
+.fluid-display {
+  font-size: clamp(26px, 6vw, var(--text-display));
+}
+.fluid-title {
+  font-size: clamp(20px, 4.5vw, var(--text-title));
+}
 
 /* ── 4. reflow 그리드 ────────────────────────────────────────────────────
    .reflow-grid : auto-fit 그리드 — 폭 남으면 컬럼 자동 증가(미디어쿼리 0개).
@@ -43,36 +55,58 @@
 }
 
 /* .reflow-stack : 모바일 세로 스택 → 데스크톱 가로 배치 */
-.reflow-stack { display: flex; flex-direction: column; gap: var(--space-4); }
+.reflow-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
 
 /* ── 5. 가시성 유틸 (디바이스별 노출/은닉) ──────────────────────────────── */
-.show-desktop { display: none; }
-.hide-desktop { display: revert; }
+.show-desktop {
+  display: none;
+}
+.hide-desktop {
+  display: revert;
+}
 
 /* ── 6. 앱 셸 reflow ─────────────────────────────────────────────────────
    모바일: 본문 + 하단 고정 탭바.
    데스크톱: 좌측 사이드 네비 + 우측 콘텐츠(탭바 숨김). */
 .app-layout {
   display: grid;
-  grid-template-columns: 1fr;       /* 모바일 — 단일 컬럼 */
+  grid-template-columns: 1fr; /* 모바일 — 단일 컬럼 */
   grid-template-areas: 'main';
   min-height: 100dvh;
 }
-.app-sidenav { grid-area: sidenav; display: none; }   /* 모바일 숨김 */
-.app-main    { grid-area: main; min-width: 0; }
-.app-tabbar  { /* 모바일 하단 고정 탭바 — 화면 컴포넌트가 채움 */ }
+.app-sidenav {
+  grid-area: sidenav;
+  display: none;
+} /* 모바일 숨김 */
+.app-main {
+  grid-area: main;
+  min-width: 0;
+}
+.app-tabbar {
+  /* 모바일 하단 고정 탭바 — 화면 컴포넌트가 채움 */
+}
 
 /* ── 7. 브레이크포인트 (리터럴 = tokens.css --bp-* 와 동기화) ─────────────── */
 
 /* ≥ tablet (480px) — 앱 본문 중앙 정렬, full-bleed 해제 */
 @media (min-width: 480px) {
-  .container--app { padding-inline: clamp(20px, 5vw, 48px); }
+  .container--app {
+    padding-inline: clamp(20px, 5vw, 48px);
+  }
 }
 
 /* ≥ desktop (1024px) — 사이드 네비 + 콘텐츠 reflow */
 @media (min-width: 1024px) {
-  .show-desktop { display: revert; }
-  .hide-desktop { display: none; }
+  .show-desktop {
+    display: revert;
+  }
+  .hide-desktop {
+    display: none;
+  }
 
   .app-layout {
     grid-template-columns: var(--sidenav-w) 1fr;
@@ -87,19 +121,28 @@
     border-right: 1.5px solid var(--line);
     background: var(--paper-2);
   }
-  .app-tabbar { display: none; }     /* 데스크톱 — 하단 탭바 숨기고 사이드로 reflow */
+  .app-tabbar {
+    display: none;
+  } /* 데스크톱 — 하단 탭바 숨기고 사이드로 reflow */
 
-  .reflow-stack { flex-direction: row; align-items: flex-start; }
+  .reflow-stack {
+    flex-direction: row;
+    align-items: flex-start;
+  }
 }
 
 /* ≥ wide (1440px) — 콘텐츠 여백 확대 */
 @media (min-width: 1440px) {
-  .container { padding-inline: clamp(40px, 6vw, 96px); }
+  .container {
+    padding-inline: clamp(40px, 6vw, 96px);
+  }
 }
 
 /* ── 8. 접근성 — 모션 감소 선호 존중 ─────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

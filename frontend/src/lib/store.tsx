@@ -1,10 +1,4 @@
-import {
-  ReactNode,
-  createContext,
-  useContext,
-  useEffect,
-  useReducer,
-} from 'react';
+import { ReactNode, createContext, useContext, useEffect, useReducer } from 'react';
 
 // In-memory app state with localStorage persistence. No backend — every
 // "AI reply" is local simulation. Resets to defaults on first load.
@@ -21,10 +15,10 @@ export type ChatMsg = {
 };
 
 export type DiaryEntry = {
-  day: number;            // 1..31 of current month for the prototype
-  moods: Mood[];           // primary + secondary feelings
+  day: number; // 1..31 of current month for the prototype
+  moods: Mood[]; // primary + secondary feelings
   keywords: string[];
-  body: string;            // generated diary
+  body: string; // generated diary
   check: Partial<Record<DailyKey, boolean>>;
   tomorrow?: string;
   createdAt: number;
@@ -35,8 +29,8 @@ export type DailyKey = 'food' | 'water' | 'sleep' | 'movement' | 'sun';
 export type State = {
   character: { name: string; color: CatColor; personalities: Personality[] };
   daily: {
-    food: { done: boolean; picks: string[] };       // 아침/점심/저녁/간식
-    water: number;                                   // 0..8
+    food: { done: boolean; picks: string[] }; // 아침/점심/저녁/간식
+    water: number; // 0..8
     sleep: { done: boolean; quality: string | null };
     movement: { done: boolean; bucket: string | null };
     sun: { done: boolean; level: string | null };
@@ -44,7 +38,7 @@ export type State = {
   aiChat: ChatMsg[];
   chatDiary: ChatMsg[];
   diaries: DiaryEntry[];
-  selectedDay: number | null;       // 달력에서 선택한 날 → 일기 디테일이 읽음
+  selectedDay: number | null; // 달력에서 선택한 날 → 일기 디테일이 읽음
   points: number;
   streak: number;
   level: number;
@@ -82,25 +76,177 @@ const mk = (
 });
 
 const SEED_DIARIES: DiaryEntry[] = [
-  mk(2, '😌', ['😊'], ['주말', '산책', '햇살'], '늦잠 자고 동네 한 바퀴. 햇살이 좋아서 마음이 풀렸다.', 'FWMU', '아침 스트레칭 10분'),
-  mk(3, '😊', [], ['친구', '커피', '수다'], '오랜만에 친구랑 커피. 웃을 일이 많았던 하루.', 'FWS', '물 6잔 채우기'),
-  mk(5, '😣', ['😌'], ['마감', '야근', '피곤'], '마감 때문에 늦게까지 일했다. 어깨가 무거웠다.', 'FW', '점심은 따뜻한 국물로'),
-  mk(7, '😊', ['😌'], ['운동', '산책', '개운'], '저녁에 30분 걸었더니 머리가 맑아졌다.', 'FWSMU', '같은 시간에 또 걷기'),
-  mk(9, '😌', [], ['집정리', '여유', '차'], '집을 정리하고 차 한 잔. 조용한 게 좋았다.', 'FWS', '책 10쪽 읽기'),
-  mk(10, '😢', ['😣'], ['외로움', '비', '생각'], '비 오는 날, 괜히 마음이 가라앉았다.', 'F', '내일은 누군가에게 안부 묻기'),
-  mk(12, '😊', ['😌'], ['칭찬', '성취', '점심'], '맡은 일이 잘 풀렸고 칭찬도 들었다. 뿌듯.', 'FWSU', '잘한 일 한 줄 적기'),
-  mk(13, '😌', [], ['루틴', '물', '안정'], '평범했지만 루틴을 다 지킨 하루.', 'FWSM', '수면 12시 전'),
-  mk(15, '😡', ['😣'], ['갈등', '회의', '답답'], '회의에서 의견이 부딪혀 답답했다.', 'FW', '감정 식히고 메모로 정리'),
-  mk(16, '😣', ['😌'], ['수면부족', '커피', '버팀'], '잠을 못 자 하루 종일 멍했다.', 'FWU', '카페인 오후 2시 전까지'),
-  mk(18, '😌', ['😊'], ['휴식', '음악', '회복'], '아무것도 안 하고 음악만 들었다. 회복되는 느낌.', 'FWS', '가벼운 산책'),
-  mk(19, '😊', [], ['약속', '맛집', '기분좋음'], '맛집 다녀오고 기분이 좋아졌다.', 'FWMU', '물 더 마시기'),
-  mk(20, '😊', ['😌'], ['집중', '몰입', '뿌듯'], '오전 내내 몰입해서 일했다. 시간 가는 줄 몰랐다.', 'FWS', '눈 휴식 자주'),
-  mk(21, '😌', [], ['산책', '햇볕', '평온'], '점심 후 햇볕 쐬며 걸었다. 평온했다.', 'FWSMU', '같은 산책 반복'),
-  mk(22, '😣', ['😢'], ['피곤', '무기력', '늦잠'], '몸이 무거워 아무것도 손에 안 잡혔다.', 'FW', '일찍 자기'),
-  mk(23, '😊', ['😌'], ['회복', '운동', '개운'], '다시 움직였더니 컨디션이 올라왔다.', 'FWSMU', '스트레칭 유지'),
-  mk(24, '😌', ['😊'], ['주말', '느긋', '책'], '느긋하게 책 읽은 주말. 충전된 느낌.', 'FWS', '내일 일정 가볍게'),
-  mk(25, '😣', ['😌'], ['업무', '집중', '피로'], '집중은 잘됐지만 끝나니 진이 빠졌다.', 'FWU', '저녁에 10분 산책'),
-  mk(26, '😣', ['😌', '😊'], ['긴 회의', '우동', '5분이 없음'], '점심으로 우동 한 그릇이 위로였다. 긴 회의로 피곤했고, 끝난 뒤 숨 돌릴 5분이 없었던 게 무거웠다.', 'FWU', '회의 종료 후 · 3분 호흡 알람'),
+  mk(
+    2,
+    '😌',
+    ['😊'],
+    ['주말', '산책', '햇살'],
+    '늦잠 자고 동네 한 바퀴. 햇살이 좋아서 마음이 풀렸다.',
+    'FWMU',
+    '아침 스트레칭 10분',
+  ),
+  mk(
+    3,
+    '😊',
+    [],
+    ['친구', '커피', '수다'],
+    '오랜만에 친구랑 커피. 웃을 일이 많았던 하루.',
+    'FWS',
+    '물 6잔 채우기',
+  ),
+  mk(
+    5,
+    '😣',
+    ['😌'],
+    ['마감', '야근', '피곤'],
+    '마감 때문에 늦게까지 일했다. 어깨가 무거웠다.',
+    'FW',
+    '점심은 따뜻한 국물로',
+  ),
+  mk(
+    7,
+    '😊',
+    ['😌'],
+    ['운동', '산책', '개운'],
+    '저녁에 30분 걸었더니 머리가 맑아졌다.',
+    'FWSMU',
+    '같은 시간에 또 걷기',
+  ),
+  mk(
+    9,
+    '😌',
+    [],
+    ['집정리', '여유', '차'],
+    '집을 정리하고 차 한 잔. 조용한 게 좋았다.',
+    'FWS',
+    '책 10쪽 읽기',
+  ),
+  mk(
+    10,
+    '😢',
+    ['😣'],
+    ['외로움', '비', '생각'],
+    '비 오는 날, 괜히 마음이 가라앉았다.',
+    'F',
+    '내일은 누군가에게 안부 묻기',
+  ),
+  mk(
+    12,
+    '😊',
+    ['😌'],
+    ['칭찬', '성취', '점심'],
+    '맡은 일이 잘 풀렸고 칭찬도 들었다. 뿌듯.',
+    'FWSU',
+    '잘한 일 한 줄 적기',
+  ),
+  mk(
+    13,
+    '😌',
+    [],
+    ['루틴', '물', '안정'],
+    '평범했지만 루틴을 다 지킨 하루.',
+    'FWSM',
+    '수면 12시 전',
+  ),
+  mk(
+    15,
+    '😡',
+    ['😣'],
+    ['갈등', '회의', '답답'],
+    '회의에서 의견이 부딪혀 답답했다.',
+    'FW',
+    '감정 식히고 메모로 정리',
+  ),
+  mk(
+    16,
+    '😣',
+    ['😌'],
+    ['수면부족', '커피', '버팀'],
+    '잠을 못 자 하루 종일 멍했다.',
+    'FWU',
+    '카페인 오후 2시 전까지',
+  ),
+  mk(
+    18,
+    '😌',
+    ['😊'],
+    ['휴식', '음악', '회복'],
+    '아무것도 안 하고 음악만 들었다. 회복되는 느낌.',
+    'FWS',
+    '가벼운 산책',
+  ),
+  mk(
+    19,
+    '😊',
+    [],
+    ['약속', '맛집', '기분좋음'],
+    '맛집 다녀오고 기분이 좋아졌다.',
+    'FWMU',
+    '물 더 마시기',
+  ),
+  mk(
+    20,
+    '😊',
+    ['😌'],
+    ['집중', '몰입', '뿌듯'],
+    '오전 내내 몰입해서 일했다. 시간 가는 줄 몰랐다.',
+    'FWS',
+    '눈 휴식 자주',
+  ),
+  mk(
+    21,
+    '😌',
+    [],
+    ['산책', '햇볕', '평온'],
+    '점심 후 햇볕 쐬며 걸었다. 평온했다.',
+    'FWSMU',
+    '같은 산책 반복',
+  ),
+  mk(
+    22,
+    '😣',
+    ['😢'],
+    ['피곤', '무기력', '늦잠'],
+    '몸이 무거워 아무것도 손에 안 잡혔다.',
+    'FW',
+    '일찍 자기',
+  ),
+  mk(
+    23,
+    '😊',
+    ['😌'],
+    ['회복', '운동', '개운'],
+    '다시 움직였더니 컨디션이 올라왔다.',
+    'FWSMU',
+    '스트레칭 유지',
+  ),
+  mk(
+    24,
+    '😌',
+    ['😊'],
+    ['주말', '느긋', '책'],
+    '느긋하게 책 읽은 주말. 충전된 느낌.',
+    'FWS',
+    '내일 일정 가볍게',
+  ),
+  mk(
+    25,
+    '😣',
+    ['😌'],
+    ['업무', '집중', '피로'],
+    '집중은 잘됐지만 끝나니 진이 빠졌다.',
+    'FWU',
+    '저녁에 10분 산책',
+  ),
+  mk(
+    26,
+    '😣',
+    ['😌', '😊'],
+    ['긴 회의', '우동', '5분이 없음'],
+    '점심으로 우동 한 그릇이 위로였다. 긴 회의로 피곤했고, 끝난 뒤 숨 돌릴 5분이 없었던 게 무거웠다.',
+    'FWU',
+    '회의 종료 후 · 3분 호흡 알람',
+  ),
 ];
 
 const DEFAULT_STATE: State = {
@@ -112,9 +258,7 @@ const DEFAULT_STATE: State = {
     movement: { done: false, bucket: null },
     sun: { done: false, level: null },
   },
-  aiChat: [
-    { role: 'bot', text: '안녕! 낮엔 내가 도와줄게.\n오늘 뭐 도와줄까?' },
-  ],
+  aiChat: [{ role: 'bot', text: '안녕! 낮엔 내가 도와줄게.\n오늘 뭐 도와줄까?' }],
   chatDiary: [],
   diaries: SEED_DIARIES,
   selectedDay: 26,
@@ -246,11 +390,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [state]);
 
-  return (
-    <StoreContext.Provider value={{ state, dispatch }}>
-      {children}
-    </StoreContext.Provider>
-  );
+  return <StoreContext.Provider value={{ state, dispatch }}>{children}</StoreContext.Provider>;
 };
 
 export const useStore = () => useContext(StoreContext);
@@ -303,8 +443,7 @@ export const simulateAiReply = (userText: string): ChatMsg => {
       return { role: 'bot', text };
     }
   }
-  const text =
-    FALLBACK_AI_REPLIES[Math.floor(Math.random() * FALLBACK_AI_REPLIES.length)];
+  const text = FALLBACK_AI_REPLIES[Math.floor(Math.random() * FALLBACK_AI_REPLIES.length)];
   return { role: 'bot', text };
 };
 
@@ -397,9 +536,7 @@ export type StatsResult = {
 
 export const statsFor = (diaries: DiaryEntry[], period: Period): StatsResult => {
   const filtered =
-    period === '주'
-      ? diaries.filter((d) => d.day > TODAY_DAY - 7 && d.day <= TODAY_DAY)
-      : diaries;
+    period === '주' ? diaries.filter((d) => d.day > TODAY_DAY - 7 && d.day <= TODAY_DAY) : diaries;
 
   const weekday = [0, 0, 0, 0, 0, 0, 0];
   const mood: Record<Mood, number> = { '😌': 0, '😊': 0, '😣': 0, '😢': 0, '😡': 0 };

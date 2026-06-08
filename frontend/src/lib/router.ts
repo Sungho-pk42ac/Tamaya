@@ -29,11 +29,11 @@ export type Route =
   | 'settings';
 
 export type NavApi = {
-  go: (route: Route) => void;       // push to history
-  back: () => void;                  // pop one
-  reset: (route: Route) => void;     // clear history, land on route
+  go: (route: Route) => void; // push to history
+  back: () => void; // pop one
+  reset: (route: Route) => void; // clear history, land on route
   current: Route;
-  night: boolean;                    // time-of-day, resolved by the shell — home tab uses it at click time
+  night: boolean; // time-of-day, resolved by the shell — home tab uses it at click time
 };
 
 export const NavContext = createContext<NavApi>({

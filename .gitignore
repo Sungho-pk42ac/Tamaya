@@ -55,3 +55,6 @@ postgres_data/
 
 # Claude session local (project-only)
 .claude/settings.local.json
+
+# OMC (oh-my-claudecode) 세션 상태 — 커밋 제외
+.omc/

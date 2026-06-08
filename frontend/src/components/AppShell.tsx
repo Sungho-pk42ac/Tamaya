@@ -10,24 +10,9 @@ import {
   S04_CreateCat,
   S05_FirstMeet,
 } from '../screens/onboarding';
-import {
-  S06_HomeDay,
-  S07_HomeNight,
-  S08_DailyCheck,
-  S09_AIChat,
-} from '../screens/home-day';
-import {
-  S10_RecapStart,
-  S11_ChatDiary,
-  S12_MoodFinalize,
-  S13_Reward,
-} from '../screens/evening';
-import {
-  S14_Calendar,
-  S15_DiaryDetail,
-  S16_Stats,
-  S17_Insights,
-} from '../screens/records';
+import { S06_HomeDay, S07_HomeNight, S08_DailyCheck, S09_AIChat } from '../screens/home-day';
+import { S10_RecapStart, S11_ChatDiary, S12_MoodFinalize, S13_Reward } from '../screens/evening';
+import { S14_Calendar, S15_DiaryDetail, S16_Stats, S17_Insights } from '../screens/records';
 import { S18_CatRoom, S19_Inventory, S20_Report } from '../screens/character';
 
 const SCREENS: Record<Route, () => ReactNode> = {
@@ -104,10 +89,7 @@ export const AppShell = ({ onExitToDesign }: { onExitToDesign: () => void }) => 
       : current;
 
   const go = useCallback((r: Route) => setStack((s) => [...s, r]), []);
-  const back = useCallback(
-    () => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s)),
-    [],
-  );
+  const back = useCallback(() => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s)), []);
   const reset = useCallback((r: Route) => setStack([r]), []);
 
   const api = useMemo<NavApi>(
@@ -330,10 +312,9 @@ const Toolbar = ({
   );
 };
 
-const Bezel = () => (
+const Bezel = () =>
   // Decorative phone bezel — not interactive, sits behind .phone.
-  null
-);
+  null;
 
 const Hint = () => (
   <div
@@ -346,7 +327,7 @@ const Hint = () => (
       lineHeight: 1.6,
     }}
   >
-    상단의 화면 선택 메뉴로 바로 점프 · 폰 안의 버튼/카드 클릭으로 흐름 진행 · 시간대 토글로
-    홈 낮↔밤 전환
+    상단의 화면 선택 메뉴로 바로 점프 · 폰 안의 버튼/카드 클릭으로 흐름 진행 · 시간대 토글로 홈
+    낮↔밤 전환
   </div>
 );

@@ -3,7 +3,13 @@ import { Route, useNav } from '../lib/router';
 
 // ── Sketch UI primitives — bartender/barista coffee tone ─────────────────────
 
-export const StatusBar = ({ time = '11:42 PM', mode = 'night' }: { time?: string; mode?: 'day' | 'night' }) => (
+export const StatusBar = ({
+  time = '11:42 PM',
+  mode = 'night',
+}: {
+  time?: string;
+  mode?: 'day' | 'night';
+}) => (
   <div
     className="statusbar"
     style={{ background: mode === 'night' ? 'rgba(61,74,120,0.08)' : 'rgba(214,154,58,0.08)' }}
@@ -160,20 +166,8 @@ export const CatSketch = ({
       <path d="M30 30 L 28 18 L 38 26" stroke={accent} strokeWidth="1.5" fill="none" />
       <path d="M90 30 L 92 18 L 82 26" stroke={accent} strokeWidth="1.5" fill="none" />
       <ellipse cx="60" cy="56" rx="36" ry="32" stroke={color} strokeWidth="2" fill="#f5e6cf" />
-      <path
-        d="M40 32 Q 44 36 42 42"
-        stroke={accent}
-        strokeWidth="1.5"
-        fill="none"
-        opacity="0.55"
-      />
-      <path
-        d="M80 32 Q 76 36 78 42"
-        stroke={accent}
-        strokeWidth="1.5"
-        fill="none"
-        opacity="0.55"
-      />
+      <path d="M40 32 Q 44 36 42 42" stroke={accent} strokeWidth="1.5" fill="none" opacity="0.55" />
+      <path d="M80 32 Q 76 36 78 42" stroke={accent} strokeWidth="1.5" fill="none" opacity="0.55" />
       <path d="M60 30 L 60 38" stroke={accent} strokeWidth="1.5" opacity="0.55" />
       {mood === 'happy' ? (
         <>

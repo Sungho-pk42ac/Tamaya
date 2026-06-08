@@ -37,6 +37,7 @@
 ## 1. 1회성 연결 (Figma MCP 인증)
 
 Figma 를 코드에서 직접 읽으려면 MCP OAuth 가 필요하다(세션당 1회).
+
 - CTO 세션에서 `mcp__plugin_figma_figma__authenticate` → 받은 URL 브라우저 승인 → 콜백 URL 회신.
 - 인증되면 `get_code` · `get_image` · `get_variable_defs` 등 read 도구 활성화.
 
@@ -86,11 +87,11 @@ figma.connect(Button, 'https://figma.com/design/<FILE>?node-id=<NODE>', {
 
 전략(확정): 단순 스케일 ❌ → **폭에 따라 구조 재구성**.
 
-| 브레이크포인트 | 폭 | 레이아웃 |
-|---|---|---|
-| mobile | ~479px | 단일 컬럼 · 하단 탭바 · full-bleed |
-| tablet | 480~1023 | 넓은 단일 컬럼 · 중앙 정렬(`--app-max`) |
-| desktop | 1024px~ | 사이드 네비(`--sidenav-w`) + 콘텐츠 2컬럼 |
+| 브레이크포인트 | 폭       | 레이아웃                                  |
+| -------------- | -------- | ----------------------------------------- |
+| mobile         | ~479px   | 단일 컬럼 · 하단 탭바 · full-bleed        |
+| tablet         | 480~1023 | 넓은 단일 컬럼 · 중앙 정렬(`--app-max`)   |
+| desktop        | 1024px~  | 사이드 네비(`--sidenav-w`) + 콘텐츠 2컬럼 |
 
 - 프리미티브: `responsive.css` 의 `.app-layout` · `.app-sidenav` · `.reflow-grid` · `.reflow-stack` · `.container--app` · `.show-desktop`/`.hide-desktop`.
 - 유동 타이포: 고정 px 대신 `clamp()` (`.fluid-display` 등).

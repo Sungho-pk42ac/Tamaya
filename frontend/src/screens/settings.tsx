@@ -52,22 +52,26 @@ export const S22_Settings = () => {
             >
               <div style={{ flex: 1 }}>
                 <div style={{ fontFamily: 'Patrick Hand', fontWeight: 700 }}>{r.label}</div>
-                <div className="tiny" style={{ marginTop: 2 }}>{r.value}</div>
+                <div className="tiny" style={{ marginTop: 2 }}>
+                  {r.value}
+                </div>
               </div>
-              {r.onClick && (
-                <span style={{ fontFamily: 'Caveat', fontSize: 22 }}>›</span>
-              )}
+              {r.onClick && <span style={{ fontFamily: 'Caveat', fontSize: 22 }}>›</span>}
             </div>
           ))}
         </div>
 
         <div style={{ marginTop: 18 }}>
-          <div className="h-label" style={{ marginBottom: 8 }}>현재 상태</div>
+          <div className="h-label" style={{ marginBottom: 8 }}>
+            현재 상태
+          </div>
           <div className="hbox r-l" style={{ padding: 12 }}>
             <div className="tiny" style={{ marginBottom: 4 }}>
               포인트 · {state.points} ◉ / 스트릭 🔥 {state.streak}일 / Lv.{state.level}
             </div>
-            <div className="tiny">아이템 {state.unlockedItems.length}개 · 입는중 {state.equippedItem ?? '없음'}</div>
+            <div className="tiny">
+              아이템 {state.unlockedItems.length}개 · 입는중 {state.equippedItem ?? '없음'}
+            </div>
           </div>
         </div>
 

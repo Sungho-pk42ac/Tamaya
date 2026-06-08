@@ -1,0 +1,13 @@
+{
+  "name": "tamaya",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Tamaya monorepo — git hooks(husky) + lint-staged orchestration for frontend(ESLint/Prettier) and backend(ruff)",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.7"
+  }
+}

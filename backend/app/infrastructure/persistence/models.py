@@ -2,7 +2,18 @@ import uuid
 from datetime import date, datetime
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import Date, DateTime, Float, ForeignKey, Index, Integer, String, Text, Boolean, UniqueConstraint
+from sqlalchemy import (
+    Boolean,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -25,7 +36,9 @@ class ChatSessionModel(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
     messages: Mapped[list["ChatMessageModel"]] = relationship(
-        back_populates="session", cascade="all, delete-orphan", order_by="ChatMessageModel.created_at"
+        back_populates="session",
+        cascade="all, delete-orphan",
+        order_by="ChatMessageModel.created_at",
     )
 
 
@@ -33,7 +46,9 @@ class ChatMessageModel(Base):
     __tablename__ = "chat_messages"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    session_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("chat_sessions.id"), nullable=False)
+    session_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("chat_sessions.id"), nullable=False
+    )
     role: Mapped[str] = mapped_column(String(20), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
@@ -120,6 +135,7 @@ class UserSessionModel(Base):
     신규 로그인 시 기존 레코드 revoked_at = now(), 새 레코드 insert.
     보호 라우트 요청마다 jti 조회 → revoked_at IS NOT NULL → 401.
     """
+
     __tablename__ = "user_sessions"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -143,7 +159,9 @@ class HealthSessionModel(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
     messages: Mapped[list["HealthMessageModel"]] = relationship(
-        back_populates="session", cascade="all, delete-orphan", order_by="HealthMessageModel.created_at"
+        back_populates="session",
+        cascade="all, delete-orphan",
+        order_by="HealthMessageModel.created_at",
     )
 
 
@@ -151,7 +169,9 @@ class HealthMessageModel(Base):
     __tablename__ = "health_messages"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    session_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("health_sessions.id"), nullable=False)
+    session_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("health_sessions.id"), nullable=False
+    )
     role: Mapped[str] = mapped_column(String(20), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
@@ -161,12 +181,14 @@ class HealthMessageModel(Base):
 
 # ─── 키우기 게임 도메인 (DEC-019, DEC-022.B) ───────────────────────────────────
 
+
 class GameProgressModel(Base):
     """
     device_id 1개당 1레코드.
     level = (total_diaries // 10) + 1
     affinity = 0~100 (일기 1건당 +2, DEC-020 BUG-07 정합)
     """
+
     __tablename__ = "game_progress"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -175,7 +197,7 @@ class GameProgressModel(Base):
     total_diaries: Mapped[int] = mapped_column(Integer, default=0)
     points: Mapped[int] = mapped_column(Integer, default=0)
     level: Mapped[int] = mapped_column(Integer, default=1)
-    affinity: Mapped[int] = mapped_column(Integer, default=0)   # 0–100
+    affinity: Mapped[int] = mapped_column(Integer, default=0)  # 0–100
     last_diary_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
@@ -186,10 +208,9 @@ class RewardInventoryModel(Base):
     reward_id: FE rewardSystem.ts REWARDS[].id ('churu_1', 'toy_ball', …)
     device_id + reward_id 복합 UNIQUE — 보상 중복 지급 방지
     """
+
     __tablename__ = "reward_inventory"
-    __table_args__ = (
-        UniqueConstraint("device_id", "reward_id", name="uq_device_reward"),
-    )
+    __table_args__ = (UniqueConstraint("device_id", "reward_id", name="uq_device_reward"),)
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     device_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)

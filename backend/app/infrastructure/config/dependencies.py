@@ -21,7 +21,9 @@ from app.infrastructure.persistence.diary_repository_impl import DiaryRepository
 from app.infrastructure.persistence.event_chunk_repository_impl import EventChunkRepositoryImpl
 from app.infrastructure.persistence.health_chunk_repository_impl import HealthChunkRepositoryImpl
 from app.infrastructure.persistence.health_record_repository_impl import HealthRecordRepositoryImpl
-from app.infrastructure.persistence.health_session_repository_impl import HealthSessionRepositoryImpl
+from app.infrastructure.persistence.health_session_repository_impl import (
+    HealthSessionRepositoryImpl,
+)
 
 _embedding_service: EmbeddingService | None = None
 
