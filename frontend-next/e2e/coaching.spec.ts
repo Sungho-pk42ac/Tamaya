@@ -25,9 +25,13 @@ test("코칭: 안전 입력에 코칭 응답이 도착한다", async ({ page }) 
 
 test("코칭: 위험 입력은 의료 면책으로 응답한다(가드레일 e2e)", async ({ page }) => {
   await page.goto("/coach");
+  // 하이드레이션 완료 대기(초기 인사 렌더) 후 상호작용
+  await expect(page.locator('[data-role="assistant"]')).toHaveCount(1);
+
   await page.getByPlaceholder("마음을 편하게 적어보세요…").fill("이 약 먹어도 돼?");
   await page.getByRole("button", { name: "전송" }).click();
 
-  // 결정론 면책 문구(전문가 상담 안내)가 렌더된다
-  await expect(page.getByText(/전문가/)).toBeVisible({ timeout: 15_000 });
+  // 응답 도착 후, 마지막 코치 말풍선에 결정론 면책(전문가 상담 안내)이 담긴다
+  await expect(page.locator('[data-role="assistant"]')).toHaveCount(2, { timeout: 15_000 });
+  await expect(page.locator('[data-role="assistant"]').last()).toContainText("전문가");
 });

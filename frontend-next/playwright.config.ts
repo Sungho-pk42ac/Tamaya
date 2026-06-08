@@ -5,7 +5,9 @@ const BASE_URL = process.env.E2E_BASE_URL ?? "http://127.0.0.1:3000";
 
 export default defineConfig({
   testDir: "./e2e",
-  fullyParallel: true,
+  // 단일 백엔드(uvicorn 1 프로세스)를 공유하므로 직렬 실행으로 경합·하이드레이션 레이스 제거.
+  fullyParallel: false,
+  workers: 1,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: "list",
