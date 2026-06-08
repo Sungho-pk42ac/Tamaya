@@ -1,0 +1,65 @@
+/* 폰트: Google Fonts(Gowun Batang·Gaegu) + Pretendard CDN — html 레퍼런스와 동일 */
+@import url("https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gaegu:wght@400;700&display=swap");
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --cream: #f4ecd9;
+  --paper: #ece0c7;
+  --coffee: #6b4f3a;
+  --coffee-deep: #4f3927;
+  --ink: #3a2e24;
+  --terracotta: #c46a43;
+  --terracotta-deep: #a8542f;
+  --espresso: #221a14;
+  --espresso-card: #2c2117;
+  --night-cream: #efe4ce;
+  --amber: #e3a85b;
+  --amber-soft: #c79150;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  font-family: "Pretendard", -apple-system, sans-serif;
+  color: var(--ink);
+  background: var(--cream);
+  background-image:
+    radial-gradient(circle at 16% 18%, rgba(196, 106, 67, 0.08), transparent 42%),
+    radial-gradient(circle at 86% 80%, rgba(79, 57, 39, 0.1), transparent 46%);
+  min-height: 100dvh;
+  word-break: keep-all;
+}
+
+/* 종이 질감 노이즈 오버레이 (html 레퍼런스 포팅) */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1.5deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(2deg);
+  }
+}
+
+.animate-bob {
+  animation: bob 4.5s var(--ease) infinite;
+  transform-origin: 50% 92%;
+}
