@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.infrastructure.config.database import engine
 from app.presentation.router.auth_router import router as auth_router
 from app.presentation.router.chat_router import router as chat_router
+from app.presentation.router.coaching_router import router as coaching_router
 from app.presentation.router.diary_router import router as diary_router
 from app.presentation.router.game_router import router as game_router
 from app.presentation.router.health_chat_router import router as health_chat_router
@@ -37,6 +38,7 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(chat_router)
+app.include_router(coaching_router)
 app.include_router(diary_router)
 app.include_router(game_router)
 app.include_router(health_chat_router)

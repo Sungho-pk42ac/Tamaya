@@ -24,6 +24,7 @@ class CoachingAgentState(TypedDict):
     session_id: UUID
     messages: list[ChatMessage]
     current_user_message: str
+    persona: str | None
     verdict: GuardrailVerdict
     response: str
 
@@ -57,7 +58,7 @@ class CoachingAgent:
         return {"response": build_disclaimer(state["verdict"])}
 
     async def _coach_node(self, state: CoachingAgentState) -> dict:
-        reply = await self._ai.coach(state["messages"])
+        reply = await self._ai.coach(state["messages"], state.get("persona"))
         # post-generation tripwire: 처방성 응답이면 결정론 면책으로 치환
         if contains_prescriptive_content(reply):
             reply = build_disclaimer(GuardrailVerdict.ADVICE_BOUNDARY)
@@ -68,12 +69,16 @@ class CoachingAgent:
         session_id: UUID,
         messages: list[ChatMessage],
         current_user_message: str,
+        persona: str | None = None,
     ) -> str:
         initial_state: CoachingAgentState = {
             "session_id": session_id,
             "messages": messages,
             "current_user_message": current_user_message,
-            "verdict": GuardrailVerdict.SAFE,
+            "persona": persona,
+            # fail-closed: guardrail_node가 항상 덮어쓰지만, 그래프 오설정 시
+            # coach로 새지 않도록 기본값을 안전(면책)으로 둔다.
+            "verdict": GuardrailVerdict.ADVICE_BOUNDARY,
             "response": "",
         }
         result = await self._graph.ainvoke(initial_state)
