@@ -8,6 +8,8 @@ from app.application.service.signal_extraction_service import SignalExtractionSe
 from app.application.usecase.chat_agent import ChatAgent
 from app.application.usecase.extract_chunks import ExtractChunksUseCase
 from app.application.usecase.extract_signals import ExtractSignalsUseCase
+from app.application.usecase.get_monthly_insight import GetMonthlyInsightUseCase
+from app.application.usecase.get_weekly_insight import GetWeeklyInsightUseCase
 from app.application.usecase.health_chat_agent import HealthChatAgent
 from app.domain.repository.chat_session_repository import ChatSessionRepository
 from app.domain.repository.diary_repository import DiaryRepository
@@ -89,6 +91,18 @@ def get_extract_signals_usecase(
     repo: QualitativeSignalRepository = Depends(get_qualitative_signal_repo),
 ) -> ExtractSignalsUseCase:
     return ExtractSignalsUseCase(service, repo)
+
+
+def get_weekly_insight_usecase(
+    repo: QualitativeSignalRepository = Depends(get_qualitative_signal_repo),
+) -> GetWeeklyInsightUseCase:
+    return GetWeeklyInsightUseCase(repo)
+
+
+def get_monthly_insight_usecase(
+    repo: QualitativeSignalRepository = Depends(get_qualitative_signal_repo),
+) -> GetMonthlyInsightUseCase:
+    return GetMonthlyInsightUseCase(repo)
 
 
 def get_health_ai_service() -> HealthAiService:
