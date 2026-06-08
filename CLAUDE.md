@@ -63,4 +63,4 @@ v3 wireframe/preview 앱이다 (`.env`·API key 불필요). `src/screens/`의 22
 - **코드 스타일**: backend는 type hint 필수, snake_case(변수/함수)·PascalCase(클래스). frontend는 camelCase, 주석은 한국어.
 - **Secrets·`.env`는 git-ignored**, 모든 env 값에 default가 있어 런타임에서 optional.
 - **로컬 개발**: FastAPI만 직접 실행하고 DB 등 외부 서비스는 Docker Compose로 띄운다.
-- 라이선스: Proprietary — All Rights Reserved.
+- 라이선스: Apache License 2.0 (저작권 2026 라이프매니저스·나재학). 루트 [LICENSE](./LICENSE) 참조.
