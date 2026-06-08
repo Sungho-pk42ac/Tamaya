@@ -9,6 +9,10 @@ import asyncio
 import sys
 import uuid
 from datetime import date, timedelta
+from pathlib import Path
+
+# scripts/ 에서 직접 실행해도 app 패키지를 찾도록 backend 루트를 경로에 추가
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app.domain.model.emotion import Emotion
 from app.domain.model.qualitative_signal import BehaviorMention, QualitativeSignal
