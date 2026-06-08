@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tamaya · 전체 아키텍처</title>
+    <style>
+      :root {
+        --cream: #fbf7f0;
+        --card: #fffdf9;
+        --ink: #2a2420;
+        --muted: #8c8178;
+        --line: #e7ddcf;
+        --red: #d6492f;
+        --accent: #c98a3a;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        background: var(--cream);
+        color: var(--ink);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo",
+          "Malgun Gothic", sans-serif;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      header {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 56px 32px 24px;
+      }
+      .kicker {
+        font-size: 12px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--red);
+        font-weight: 700;
+      }
+      h1 { font-size: 40px; margin: 8px 0 6px; letter-spacing: -0.02em; }
+      .sub { color: var(--muted); font-size: 16px; max-width: 720px; }
+      .meta { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; }
+      .pill {
+        font-size: 12px; padding: 4px 11px; border: 1px solid var(--line);
+        border-radius: 999px; background: var(--card); color: #6b6056;
+      }
+      main { max-width: 1180px; margin: 0 auto; padding: 12px 32px 80px; }
+      section {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 28px 30px 32px;
+        margin: 22px 0;
+        box-shadow: 0 1px 0 #fff inset, 0 8px 24px -18px rgba(42, 36, 32, 0.4);
+      }
+      h2 {
+        font-size: 22px; margin: 0 0 4px; letter-spacing: -0.01em;
+        display: flex; align-items: baseline; gap: 10px;
+      }
+      h2 .idx { color: var(--red); font-variant-numeric: tabular-nums; font-size: 15px; }
+      .desc { color: var(--muted); font-size: 14.5px; margin: 0 0 18px; max-width: 820px; }
+      .mermaid {
+        background: #fefcf8;
+        border: 1px dashed var(--line);
+        border-radius: 12px;
+        padding: 18px;
+        text-align: center;
+        overflow-x: auto;
+      }
+      .legend { margin-top: 14px; font-size: 13px; color: #6b6056; }
+      .legend b { color: var(--ink); }
+      code {
+        background: #f1e9db; padding: 1px 6px; border-radius: 5px;
+        font-family: "SF Mono", "Cascadia Code", Consolas, monospace; font-size: 12.5px;
+      }
+      footer {
+        max-width: 1180px; margin: 0 auto; padding: 0 32px 60px;
+        color: var(--muted); font-size: 13px;
+      }
+      .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      @media (max-width: 820px) { .grid2 { grid-template-columns: 1fr; } h1 { font-size: 30px; } }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="kicker">Architecture Map</div>
+      <h1>Tamaya 전체 아키텍처</h1>
+      <p class="sub">
+        온디바이스 우선 대화형 AI 감정 다이어리. FastAPI(clean-architecture) 백엔드와
+        React/Vite(localStorage PoC) 프론트로 구성된 monorepo의 전체 구조를 한눈에 봅니다.
+      </p>
+      <div class="meta">
+        <span class="pill">FastAPI · Python 3.13</span>
+        <span class="pill">Clean Architecture + DDD</span>
+        <span class="pill">PostgreSQL + pgvector</span>
+        <span class="pill">Naver CLOVA · HCX-005</span>
+        <span class="pill">React 18 · Vite 5</span>
+      </div>
+    </header>
+
+    <main>
+      <!-- 1. 시스템 개요 -->
+      <section>
+        <h2><span class="idx">01</span> 시스템 개요 — monorepo</h2>
+        <p class="desc">
+          프론트와 백엔드, 외부 의존성의 관계. <b>현재 프론트는 백엔드와 통신하지 않는
+          localStorage 전용 PoC</b>(점선)이며, 백엔드는 독립적으로 외부 서비스와 연결됩니다.
+        </p>
+        <div class="mermaid">
+flowchart LR
+    subgraph FE["frontend/ · React + Vite"]
+        direction TB
+        S["22 screens<br/>AppShell 375×812"]
+        ST["reducer store<br/>(localStorage)"]
+        S --> ST
+    end
+
+    subgraph BE["backend/ · FastAPI :8000"]
+        direction TB
+        H["/health"]
+        RT["router 5종<br/>auth·chat·diary·game·health_chat"]
+    end
+
+    subgraph EXT["외부 의존성"]
+        direction TB
+        DB[("PostgreSQL<br/>+ pgvector")]
+        CL["Naver CLOVA<br/>HCX-005 · 기본 mock"]
+        KA["Kakao OAuth"]
+    end
+
+    FE -. "API 미연동<br/>(CORS 허용만 설정)" .-> RT
+    RT --> DB
+    RT --> CL
+    RT --> KA
+        </div>
+        <p class="legend">
+          <b>점선</b> = 아직 구현되지 않은 연결. CORS는 <code>localhost:3000/5173/19006</code>까지 열려 있어 연동 준비만 된 상태입니다.
+        </p>
+      </section>
+
+      <!-- 2. Clean Architecture 레이어 -->
+      <section>
+        <h2><span class="idx">02</span> Backend — Clean Architecture 4 레이어</h2>
+        <p class="desc">
+          의존성은 항상 안쪽(domain)을 향합니다:
+          <code>presentation → application → domain ← infrastructure</code>.
+          infrastructure는 domain이 정의한 인터페이스를 <i>구현</i>할 뿐, domain은 infrastructure를 모릅니다(의존성 역전).
+        </p>
+        <div class="mermaid">
+flowchart TB
+    subgraph P["presentation/router"]
+        P1["auth · chat · diary<br/>game · health_chat"]
+        P2["schemas · health_schemas<br/>(DTO)"]
+    end
+    subgraph A["application"]
+        A1["usecase ×15<br/>start/send/finalize/extract …"]
+        A2["service ×3<br/>ai_chat · embedding · health_ai"]
+    end
+    subgraph D["domain (순수 Python)"]
+        D1["model ×12<br/>chat·diary·emotion·health·game …"]
+        D2["repository (interface) ×6"]
+    end
+    subgraph I["infrastructure"]
+        I1["persistence<br/>repo impl ×6 · models.py"]
+        I2["external<br/>clova_client · embedding_impl"]
+        I3["auth jwt_handler · config db/deps/settings<br/>middleware masking"]
+    end
+
+    P --> A
+    A --> D
+    I1 -. implements .-> D2
+    I2 -. implements .-> A2
+    I1 --> D1
+        </div>
+        <p class="legend">
+          <b>점선(implements)</b> = 구체 구현이 추상 인터페이스를 따른다는 표시.
+          DI 와이어링은 <code>infrastructure/config/dependencies.py</code>에서 이뤄집니다.
+        </p>
+      </section>
+
+      <!-- 3. 도메인(바운디드 컨텍스트) -->
+      <section>
+        <h2><span class="idx">03</span> 도메인 모델 — 4 갈래</h2>
+        <p class="desc">
+          12개 도메인 모델이 네 개의 흐름으로 묶입니다. 각 흐름은 라우터·usecase·repository가
+          한 세트로 대응됩니다.
+        </p>
+        <div class="mermaid">
+flowchart TB
+    subgraph CD["💬 대화 · 일기"]
+        direction TB
+        cs["chat_session"] --> cm["chat_message"]
+        di["diary"] --> em["emotion"]
+        ec["event_chunk<br/>(embedding)"]
+    end
+    subgraph HE["🩺 헬스 대화"]
+        direction TB
+        hs["health_session"] --> hm["health_message"]
+        hr["health_record"] --> hc["health_chunk<br/>(embedding)"]
+    end
+    subgraph GA["🎮 게임"]
+        gp["game_progress"]
+    end
+    subgraph AU["🔐 인증"]
+        us["user_session<br/>(Kakao + JWT)"]
+    end
+
+    cm -.대화 종료.-> di
+    di -.청크화.-> ec
+        </div>
+        <p class="legend">
+          <code>event_chunk</code>·<code>health_chunk</code>는 pgvector(1024-dim) 임베딩 검색용 청크입니다.
+        </p>
+      </section>
+
+      <!-- 4. 요청 시퀀스 -->
+      <section>
+        <h2><span class="idx">04</span> 요청 흐름 — 대화에서 일기까지</h2>
+        <p class="desc">
+          사용자가 AI와 대화하고, 대화를 일기로 확정(finalize)하면 청크화·임베딩되어 저장되는 핵심 경로입니다.
+        </p>
+        <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant U as 사용자
+    participant R as chat_router
+    participant UC as send_message
+    participant AG as chat_agent
+    participant SVC as ai_chat_service
+    participant CL as CLOVA (mock)
+    participant FIN as finalize_diary
+    participant EMB as embedding_service
+    participant DB as PostgreSQL + pgvector
+
+    U->>R: POST 메시지
+    R->>UC: execute(session, content)
+    UC->>AG: 대화 처리
+    AG->>SVC: AI 응답 요청
+    SVC->>CL: chat completion
+    CL-->>SVC: 응답 텍스트
+    UC->>DB: chat_message 저장
+    Note over U,DB: 하루를 마무리하며 일기 확정
+    U->>FIN: 일기 확정 요청
+    FIN->>EMB: extract_chunks → 임베딩
+    EMB->>DB: diary + event_chunk(vector) 저장
+        </div>
+        <p class="legend">
+          <code>CLOVA_MOCK_MODE=true</code>가 기본이라 API 키 없이도 위 흐름이 끝까지 동작합니다.
+        </p>
+      </section>
+
+      <!-- 5. 프론트 / 데이터 운영 -->
+      <div class="grid2">
+        <section>
+          <h2><span class="idx">05</span> Frontend 구조</h2>
+          <p class="desc">custom hash router + localStorage store 위에서 도는 wireframe/preview 앱.</p>
+          <div class="mermaid">
+flowchart TB
+    M["main.tsx"] --> APP["App.tsx"]
+    APP --> RT["lib/router.ts<br/>(hash router)"]
+    APP --> STO["lib/store.tsx<br/>(reducer + localStorage)"]
+    APP --> SH["AppShell<br/>phone shell"]
+    SH --> SCR["screens/<br/>cover·login·onboarding<br/>home-day·evening·records<br/>character·settings"]
+    DC["#design → DesignCanvas<br/>(전체 화면 한눈에)"]
+          </div>
+        </section>
+        <section>
+          <h2><span class="idx">06</span> 데이터 / 운영 불변식</h2>
+          <p class="desc">스키마와 외부 연동의 핵심 규칙.</p>
+          <div class="mermaid">
+flowchart TB
+    AL["alembic/versions<br/>(6 revisions)"] -->|"upgrade head"| DBS[("DB schema")]
+    MD["persistence/models.py<br/>Base.metadata"] -.source of truth.-> AL
+    note["main.py: create_all 제거<br/>→ 마이그레이션이 유일 경로"]:::n
+    classDef n fill:#fdeee9,stroke:#d6492f,color:#7a2b1c;
+          </div>
+          <p class="legend">모델만 바꾸지 말고 항상 <code>alembic revision --autogenerate</code> → <code>upgrade head</code>.</p>
+        </section>
+      </div>
+    </main>
+
+    <footer>
+      생성: Claude Code · 실제 소스 트리(<code>backend/app</code>, <code>frontend/src</code>) 기준 ·
+      상세 백엔드 규칙은 <code>backend/CLAUDE.md</code> 참고. 다이어그램은 mermaid로 렌더됩니다.
+    </footer>
+
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: 'base',
+        themeVariables: {
+          fontFamily:
+            '-apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif',
+          primaryColor: '#fff7ec',
+          primaryBorderColor: '#c98a3a',
+          primaryTextColor: '#2a2420',
+          lineColor: '#b9a98f',
+          secondaryColor: '#f3ece0',
+          tertiaryColor: '#fbf7f0',
+        },
+        flowchart: { curve: 'basis', useMaxWidth: true },
+        sequence: { useMaxWidth: true },
+      });
+    </script>
+  </body>
+</html>
